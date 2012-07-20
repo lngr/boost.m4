@@ -364,7 +364,6 @@ dnl start the for loops).
 # right so instead we'll try to a location based on where the headers are.
 boost_tmp_lib=$with_boost
 test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
-  AC_MSG_NOTICE([boost tmp_lib = $boost_tmp_lib, cv_inc_path = $boost_cv_inc_path ]);
 for boost_ldpath in \
          "$boost_tmp_lib/lib" "$boost_tmp_lib/stage\lib" \
          "$with_boost" "$with_boost/stage/lib" \
