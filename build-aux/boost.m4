@@ -380,7 +380,7 @@ for boost_rtopt_ in $boost_rtopt '' -d; do
     test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
     for boost_ldpath in "$boost_tmp_lib/lib" '' \
              /opt/local/lib* /usr/local/lib* /opt/lib* /usr/lib* \
-             "$with_boost" C:/Boost/lib /lib*
+             "$with_boost/stage/lib" "$with_boost" C:/Boost/lib /lib*
     do
       test -e "$boost_ldpath" || continue
       boost_save_LDFLAGS=$LDFLAGS
