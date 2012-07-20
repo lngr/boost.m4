@@ -328,7 +328,8 @@ AC_CACHE_CHECK([for the Boost $1 library], [Boost_lib],
   esac
   # If the PREFERRED-RT-OPT are not empty, prepend a `-'.
   test -n "$boost_rtopt" && boost_rtopt="-$boost_rtopt"
-  $boost_guess_use_mt && boost_mt=-mt
+  dnl disable, this check is dangerous at best when multiple boost version's are lying around!
+  dnl $boost_guess_use_mt && boost_mt=-mt
   # Look for the abs path the static archive.
   # $libext is computed by Libtool but let's make sure it's non empty.
   test -z "$libext" &&
@@ -358,30 +359,31 @@ dnl start the for loops).
     [AC_MSG_ERROR([cannot compile a test that uses Boost $1])])
   ac_objext=$boost_save_ac_objext
   boost_failed_libs=
-# Don't bother to ident the 6 nested for loops, only the 2 innermost ones
-# matter.
-for boost_tag_ in -$boost_cv_lib_tag ''; do
-for boost_ver_ in -$boost_cv_lib_version ''; do
-for boost_mt_ in $boost_mt -mt ''; do
-for boost_rtopt_ in $boost_rtopt '' -d; do
-  for boost_lib in \
-    boost_$1$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
-    boost_$1$boost_tag_$boost_rtopt_$boost_ver_ \
-    boost_$1$boost_tag_$boost_mt_$boost_ver_ \
-    boost_$1$boost_tag_$boost_ver_
-  do
-    # Avoid testing twice the same lib
-    case $boost_failed_libs in #(
-      *@$boost_lib@*) continue;;
-    esac
-    # If with_boost is empty, we'll search in /lib first, which is not quite
-    # right so instead we'll try to a location based on where the headers are.
-    boost_tmp_lib=$with_boost
-    test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
-    for boost_ldpath in "$boost_tmp_lib/lib" '' \
-             /opt/local/lib* /usr/local/lib* /opt/lib* /usr/lib* \
-             "$with_boost/stage/lib" "$with_boost" C:/Boost/lib /lib*
+
+# If with_boost is empty, we'll search in /lib first, which is not quite
+# right so instead we'll try to a location based on where the headers are.
+boost_tmp_lib=$with_boost
+test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
+  AC_MSG_NOTICE([boost tmp_lib = $boost_tmp_lib, cv_inc_path = $boost_cv_inc_path ]);
+for boost_ldpath in \
+         "$boost_tmp_lib/lib" "$boost_tmp_lib/stage\lib" \
+         "$with_boost" "$with_boost/stage/lib" \
+         '' \
+         /opt/local/lib* /usr/local/lib* /opt/lib* /usr/lib* \
+  C:/Boost/lib /lib*
+do
+  # Don't bother to ident the these nested for loops, they do not matter
+  for boost_tag_ in -$boost_cv_lib_tag ''; do
+  for boost_ver_ in -$boost_cv_lib_version ''; do
+  for boost_mt_ in $boost_mt '' -mt; do
+  for boost_rtopt_ in $boost_rtopt '' -d; do
+    for boost_lib in \
+        boost_$1$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+        boost_$1$boost_tag_$boost_rtopt_$boost_ver_ \
+        boost_$1$boost_tag_$boost_mt_$boost_ver_ \
+        boost_$1$boost_tag_$boost_ver_
     do
+      # Avoid testing twice the same lib
       test -e "$boost_ldpath" || continue
       boost_save_LDFLAGS=$LDFLAGS
       # Are we looking for a static library?
@@ -402,6 +404,7 @@ dnl generated only once above (before we start the for loops).
       ac_objext=$boost_save_ac_objext
       LDFLAGS=$boost_save_LDFLAGS
       LIBS=$boost_save_LIBS
+      dnl AC_MSG_NOTICE([Testing for boost_lib $boost_lib in $boost_ldpath]);
       if test x"$Boost_lib" = xyes; then
         # Because Boost is often installed in non-standard locations we want to
         # hardcode the path to the library (with rpath).  Here we assume that
@@ -414,8 +417,6 @@ dnl generated only once above (before we start the for loops).
         Boost_lib_LDFLAGS="-L$boost_ldpath $boost_rpath"
         Boost_lib_LDPATH="$boost_ldpath"
         break 6
-      else
-        boost_failed_libs="$boost_failed_libs@$boost_lib@"
       fi
     done
   done
